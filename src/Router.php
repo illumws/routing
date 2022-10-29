@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace illum\Routing;
 
+use illum\Http\Headers;
+
 class Router extends Core
 {
     /**
@@ -13,13 +15,7 @@ class Router extends Core
      */
     public static function set404($handler = null)
     {
-        if (is_callable($handler)) {
-            static::$notFoundHandler = $handler;
-        } else {
-            static::$notFoundHandler = function () {
-                \Leaf\Exception\General::default404();
-            };
-        }
+        static::$notFoundHandler = $handler;
     }
 
     /**
@@ -140,7 +136,7 @@ class Router extends Core
      * Add a route with all available HTTP methods
      * 
      * @param string $pattern The route pattern/path to match
-     * @param string|array|callable The handler for route when matched
+     * @param string|array|callable $handler The handler for route when matched
      */
     public static function all(string $pattern, $handler)
     {
@@ -155,7 +151,7 @@ class Router extends Core
      * Add a route with GET method
      * 
      * @param string $pattern The route pattern/path to match
-     * @param string|array|callable The handler for route when matched
+     * @param string|array|callable $handler The handler for route when matched
      */
     public static function get(string $pattern, $handler)
     {
@@ -166,7 +162,7 @@ class Router extends Core
      * Add a route with POST method
      * 
      * @param string $pattern The route pattern/path to match
-     * @param string|array|callable The handler for route when matched
+     * @param string|array|callable $handler The handler for route when matched
      */
     public static function post(string $pattern, $handler)
     {
@@ -177,7 +173,7 @@ class Router extends Core
      * Add a route with PUT method
      * 
      * @param string $pattern The route pattern/path to match
-     * @param string|array|callable The handler for route when matched
+     * @param string|array|callable $handler The handler for route when matched
      */
     public static function put(string $pattern, $handler)
     {
@@ -188,7 +184,7 @@ class Router extends Core
      * Add a route with PATCH method
      * 
      * @param string $pattern The route pattern/path to match
-     * @param string|array|callable The handler for route when matched
+     * @param string|array|callable $handler The handler for route when matched
      */
     public static function patch(string $pattern, $handler)
     {
@@ -199,7 +195,7 @@ class Router extends Core
      * Add a route with OPTIONS method
      * 
      * @param string $pattern The route pattern/path to match
-     * @param string|array|callable The handler for route when matched
+     * @param string|array|callable $handler The handler for route when matched
      */
     public static function options(string $pattern, $handler)
     {
@@ -210,7 +206,7 @@ class Router extends Core
      * Add a route with DELETE method
      * 
      * @param string $pattern The route pattern/path to match
-     * @param string|array|callable The handler for route when matched
+     * @param string|array|callable $handler The handler for route when matched
      */
     public static function delete(string $pattern, $handler)
     {
@@ -230,7 +226,7 @@ class Router extends Core
         int $status = 302
     ) {
         static::get($from, function () use ($to, $status) {
-            return header("location: $to", true, $status);
+            Headers::set('location', $to, true, $status);
         });
     }
 
@@ -309,7 +305,6 @@ class Router extends Core
 
             $data = rtrim($args, '&');
         }
-
-        return header("location: $route$data");
+        Headers::set('location', "$route$data");
     }
 }

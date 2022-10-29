@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace illum\Routing;
 
+use Closure;
+use illum\Http\Request;
 use Illuminate\Container\Container;
+use Illuminate\Contracts\Container\BindingResolutionException;
 
 class Core
 {
@@ -17,17 +20,17 @@ class Core
     /**
      * Callable to be invoked if no matching routes are found
      */
-    protected static $notFoundHandler;
+    protected static ?Closure $notFoundHandler = null;
 
     /**
      * Callable to be invoked if app is down
      */
-    protected static $downHandler;
+    protected static ?Closure $downHandler = null;
 
     /**
      * Router configuration
      */
-    protected static $config = [
+    protected static array $config = [
         'mode' => 'development',
         'debug' => true,
         'app.down' => false,
@@ -36,7 +39,7 @@ class Core
     /**
      * 'Middleware' to run at specific times
      */
-    protected static $hooks = [
+    protected static array $hooks = [
         'router.before' => false,
         'router.before.route' => false,
         'router.before.dispatch' => false,
@@ -48,47 +51,47 @@ class Core
     /**
      * Leaf app middleware
      */
-    protected static $middleware = [];
+    protected static ?array $middleware = [];
 
     /**
      * Route specific middleware
      */
-    protected static $routeSpecificMiddleware = [];
+    protected static ?array $routeSpecificMiddleware = [];
 
     /**
      * All added routes and their handlers
      */
-    protected static $routes = [];
+    protected static ?array $routes = [];
 
     /**
      * Sorted list of routes and their handlers
      */
-    protected static $appRoutes = [];
+    protected static ?array $appRoutes = [];
 
     /**
      * All named routes
      */
-    protected static $namedRoutes = [];
+    protected static ?array $namedRoutes = [];
 
     /**
      * Current group base path
      */
-    protected static $groupRoute = '';
+    protected static ?string $groupRoute = '';
 
     /**
      * Default controller namespace
      */
-    protected static $namespace = '';
+    protected static ?string $namespace = '';
 
     /**
      * The Request Method that needs to be handled
      */
-    protected static $requestedMethod = '';
+    protected static ?string $requestedMethod = '';
 
     /**
      * The Server Base Path for Router Execution
      */
-    protected static $serverBasePath = '';
+    protected static ?string $serverBasePath = '';
 
     /**
      * Configure leaf router
@@ -244,9 +247,9 @@ class Core
      * This method prepends new middleware to the application middleware stack.
      * The argument must be an instance that subclasses Leaf_Middleware.
      *
-     * @param \Leaf\Middleware $newMiddleware The middleware to set
+     * @param Middleware $newMiddleware The middleware to set
      */
-    public static function use($newMiddleware)
+    public static function use(Middleware $newMiddleware)
     {
         if (in_array($newMiddleware, static::$middleware)) {
             $middleware_class = get_class($newMiddleware);
@@ -261,26 +264,12 @@ class Core
     }
 
     /**
-     * Return server base Path, and define it if isn't defined.
-     *
-     * @return string
-     */
-    public static function getBasePath(): string
-    {
-        if (static::$serverBasePath === '') {
-            static::$serverBasePath = implode('/', array_slice(explode('/', $_SERVER['SCRIPT_NAME']), 0, -1)) . '/';
-        }
-
-        return static::$serverBasePath;
-    }
-
-    /**
      * Explicilty sets the server base path. To be used when your entry script path differs from your entry URLs.
      * @see https://github.com/bramus/router/issues/82#issuecomment-466956078
      *
-     * @param string
+     * @param string $serverBasePath
      */
-    public static function setBasePath($serverBasePath)
+    public static function setBasePath(string $serverBasePath)
     {
         static::$serverBasePath = $serverBasePath;
     }
@@ -292,8 +281,7 @@ class Core
      */
     public static function getCurrentUri(): string
     {
-        // Get the current Request URI and remove rewrite base path from it (= allows one to run the router in a sub folder)
-        $uri = substr(rawurldecode($_SERVER['REQUEST_URI']), strlen(static::getBasePath()));
+        $uri = Request::getPathInfo();
 
         if (strstr($uri, '?')) {
             $uri = substr($uri, 0, strpos($uri, '?'));
@@ -311,7 +299,7 @@ class Core
     {
         return [
             'path' => static::getCurrentUri(),
-            'method' => \Leaf\Http\Request::getMethod(),
+            'method' => Request::getMethod(),
         ];
     }
 
@@ -334,29 +322,15 @@ class Core
     /**
      * Dispatch your application routes
      */
-    public static function run(?callable $callback = null)
+    public static function run(?callable $callback = null): bool
     {
         $config = static::$config;
-
-        if (class_exists('illum\App')) {
-            $config = array_merge($config, [
-                'mode' => \Leaf\Config::get('mode'),
-                'app.down' => \Leaf\Anchor::toBool(\Leaf\Config::get('app.down')) ?? false,
-                'debug' => \Leaf\Anchor::toBool(\Leaf\Config::get('debug')) ?? false,
-            ]);
-        }
-
         if ($config['app.down'] === true) {
+
             if (!static::$downHandler) {
-                if (class_exists('illum\App')) {
-                    static::$downHandler = function () {
-                        \Leaf\Exception\General::defaultDown();
-                    };
-                } else {
-                    static::$downHandler = function () {
-                        echo 'App is down for maintenance';
-                    };
-                }
+                static::$downHandler = function () {
+                    throw new \ErrorException('App is under maintainance, please check back soon.');
+                };
             }
 
             return static::invoke(static::$downHandler);
@@ -380,7 +354,7 @@ class Core
 
         static::callHook('router.before.route');
 
-        static::$requestedMethod = \Leaf\Http\Request::getMethod();
+        static::$requestedMethod = Request::getMethod();
 
         if (isset(static::$routeSpecificMiddleware[static::$requestedMethod])) {
             static::handle(static::$routeSpecificMiddleware[static::$requestedMethod]);
@@ -401,18 +375,12 @@ class Core
 
         if ($numHandled === 0) {
             if (!static::$notFoundHandler) {
-                if (class_exists('illum\App')) {
-                    static::$notFoundHandler = function () {
-                        \Leaf\Exception\General::default404();
-                    };
-                } else {
-                    static::$notFoundHandler = function () {
-                        echo 'Route not found';
-                    };
-                }
+                static::$notFoundHandler = function () {
+                    throw new \ErrorException("Route not found");
+                };
             }
 
-            static::invoke(static::$notFoundHandler);
+            return static::invoke(static::$notFoundHandler);
         }
 
         // if it originally was a HEAD request, clean up after ourselves by emptying the output buffer
@@ -474,7 +442,13 @@ class Core
         return $numHandled;
     }
 
-    private static function invoke($handler, $params = [])
+    /**
+     * @param $handler
+     * @param array $params
+     * @return true
+     * @throws BindingResolutionException
+     */
+    private static function invoke($handler, array $params = []): bool
     {
         if (is_callable($handler) or is_array($handler)) {
             if (is_array($handler)){
@@ -501,8 +475,9 @@ class Core
             // If isn't a valid static method, we will try as a normal method invocation.
             if (call_user_func_array([self::getContainerInstance()->make($handler[0]), $method], $params) === false) {
                 // Try to call the method as a non-static method. (the if does nothing, only avoids the notice)
-                if (forward_static_call_array([$controller, $method], $params) === false);
+                if (forward_static_call_array([$controller, $method], $params) === false) return true;
             }
         }
+        return true;
     }
 }

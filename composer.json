@@ -31,7 +31,7 @@
   "prefer-stable": true,
   "require": {
     "php": ">=7.4",
-    "leafs/http": "v2.*",
+    "illum/http": "v1.*",
     "leafs/anchor": "v1.*",
     "illuminate/container": "v8.*"
   },
