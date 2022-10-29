@@ -1,0 +1,47 @@
+{
+  "name": "illum/routing",
+  "description": "Gerenciador de rotas baseado no leaf router",
+  "keywords": [
+    "rest",
+    "router",
+    "routing"
+  ],
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "alessandro",
+      "email": "alessandroamos00@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "illum\\Routing\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "App\\Controllers\\": "tests/setup/"
+    }
+  },
+  "scripts": {
+    "test" : "vendor/bin/pest"
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "require": {
+    "php": ">=7.4",
+    "leafs/http": "v2.*",
+    "leafs/anchor": "v1.*",
+    "illuminate/container": "v8.*"
+  },
+  "require-dev": {
+    "pestphp/pest": "^1.21",
+    "symfony/var-dumper": "^5.4"
+  },
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    }
+  }
+}
