@@ -34,6 +34,7 @@ class Core
         'mode' => 'development',
         'debug' => true,
         'app.down' => false,
+        'path.prefix' => false,
     ];
 
     /**
@@ -281,7 +282,11 @@ class Core
      */
     public static function getCurrentUri(): string
     {
-        $uri = Request::getPathInfo();
+        if (self::$config['path.prefix']){
+            $uri = str_replace(self::$config['path.prefix'], '', Request::getPathInfo());
+        } else {
+            $uri = Request::getPathInfo();
+        }
 
         if (strstr($uri, '?')) {
             $uri = substr($uri, 0, strpos($uri, '?'));
