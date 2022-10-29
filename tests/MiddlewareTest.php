@@ -10,7 +10,7 @@ class TMid
 test('leaf middleware', function () {
 	TMid::$callstack = '';
 
-	class AppMid {
+	class AppMid extends \illum\Routing\Middleware {
 		public function call()
 		{
 			TMid::$callstack .= '1';
