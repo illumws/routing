@@ -98,9 +98,12 @@ class Core
      * @param Container|null $container
      * @param array $config
      */
-    public function __construct(Container $container = null, array $config = [])
+    public function __construct(Container $container, array $config = [])
     {
-        $this->container = $container ?? new Container();
+        $this->container = $container;
+        $this->container->instance('router', $this);
+        $this->container->alias('router', static::class);
+
         $this->config = array_merge($this->config, $config);
     }
 

@@ -10,7 +10,7 @@ class TGroup
 test('route groups', function () {
     $_SERVER['REQUEST_URI'] = '/group/route';
 
-    $router = new Router;
+    $router = new Router(new \Illuminate\Container\Container());
 
     TGroup::$val = true;
 
@@ -28,7 +28,7 @@ test('route groups', function () {
 test('route groups with array', function () {
     $_SERVER['REQUEST_URI'] = '/group/route';
 
-    $router = new Router;
+    $router = new Router(new \Illuminate\Container\Container());
 
     TGroup::$val = true;
 
@@ -46,7 +46,7 @@ test('route groups with array', function () {
 test('route groups with namespace', function () {
     $_SERVER['REQUEST_URI'] = '/group/route';
 
-    $router = new Router;
+    $router = new Router(new \Illuminate\Container\Container());
 
     $router->mount('/group', ['namespace' => 'App\Controllers', function () use ($router) {
         $router->get('/route', 'ExampleController');
@@ -64,7 +64,7 @@ test('route groups with namespace', function () {
 test('route groups with different namespace', function () {
     $_SERVER['REQUEST_URI'] = '/group/route';
 
-    $router = new Router;
+    $router = new Router(new \Illuminate\Container\Container());
     $router->setNamespace('Controllers');
 
     TGroup::$val = true;

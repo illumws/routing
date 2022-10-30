@@ -17,7 +17,8 @@
   "autoload": {
     "psr-4": {
       "illum\\Routing\\": "src"
-    }
+    },
+    "files": ["src/helper.php"]
   },
   "autoload-dev": {
     "psr-4": {

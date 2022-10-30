@@ -8,7 +8,7 @@ test('router match with controller', function () {
 
     \App\Controllers\Bar::$val = true;
 
-    $router = new Router;
+    $router = new Router(new \Illuminate\Container\Container());
     $router->match('PUT', '/put', [\App\Controllers\Bar::class, 'val']);
     $router->run();
 
@@ -20,7 +20,7 @@ test('get route with controller', function () {
     $_SERVER['REQUEST_URI'] = '/';
     \App\Controllers\Bar::$val = true;
 
-    $router = new Router;
+    $router = new Router(new \Illuminate\Container\Container());
     $router->get('/', [\App\Controllers\Bar::class, 'val']);
     $router->run();
 
@@ -33,7 +33,7 @@ test('post route with controller', function () {
 
     \App\Controllers\Bar::$val = true;
 
-    $router = new Router;
+    $router = new Router(new \Illuminate\Container\Container());
     $router->post('/delete', [\App\Controllers\Bar::class, 'val']);
     $router->run();
 
@@ -46,7 +46,7 @@ test('put route with controller', function () {
 
     \App\Controllers\Bar::$val = true;
 
-    $router = new Router;
+    $router = new Router(new \Illuminate\Container\Container());
     $router->put('/patch', [\App\Controllers\Bar::class, 'val']);
     $router->run();
 
@@ -59,7 +59,7 @@ test('patch route with controller', function () {
 
     \App\Controllers\Bar::$val = true;
 
-    $router = new Router;
+    $router = new Router(new \Illuminate\Container\Container());
     $router->patch('/', [\App\Controllers\Bar::class, 'val']);
     $router->run();
 
@@ -72,7 +72,7 @@ test('options route with controller', function () {
 
     \App\Controllers\Bar::$val = true;
 
-    $router = new Router;
+    $router = new Router(new \Illuminate\Container\Container());
     $router->options('/', [\App\Controllers\Bar::class, 'val']);
     $router->run();
 
@@ -85,7 +85,7 @@ test('delete route with controller', function () {
 
     \App\Controllers\Bar::$val = true;
 
-    $router = new Router;
+    $router = new Router(new \Illuminate\Container\Container());
     $router->delete('/', [\App\Controllers\Bar::class, 'val']);
     $router->run();
 
@@ -98,7 +98,7 @@ test('get route with controller and dependency injection', function () {
 
     \App\Controllers\Bar::$val = true;
 
-    $router = new Router;
+    $router = new Router(new \Illuminate\Container\Container());
     $router->get('/', [\App\Controllers\Foo::class, 'valFromBar']);
     $router->run();
 

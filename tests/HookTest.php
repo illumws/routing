@@ -6,7 +6,7 @@ test('hook execution order', function () {
     $_SERVER['REQUEST_METHOD'] = 'POST';
     $_SERVER['REQUEST_URI'] = '/post';
 
-    $router = new Router;
+    $router = new Router(new \Illuminate\Container\Container());
 
     $router->hook('router.after.dispatch', function () {
         echo '5';

@@ -13,7 +13,7 @@ test('router match', function () {
 
     TRoute::$val = true;
 
-    $router = new Router;
+    $router = new Router(new \Illuminate\Container\Container());
     $router->match('PUT', '/', function () {
         TRoute::$val = false;
     });
@@ -28,7 +28,7 @@ test('get route', function () {
 
     TRoute::$val = true;
 
-    $router = new Router;
+    $router = new Router(new \Illuminate\Container\Container());
     $router->get('/', function () {
         TRoute::$val = false;
     });
@@ -43,7 +43,7 @@ test('post route', function () {
 
     TRoute::$val = true;
 
-    $router = new Router;
+    $router = new Router(new \Illuminate\Container\Container());
     $router->post('/', function () {
         TRoute::$val = false;
     });
@@ -58,7 +58,7 @@ test('put route', function () {
 
     TRoute::$val = true;
 
-    $router = new Router;
+    $router = new Router(new \Illuminate\Container\Container());
     $router->put('/', function () {
         TRoute::$val = false;
     });
@@ -73,7 +73,7 @@ test('patch route', function () {
 
     TRoute::$val = true;
 
-    $router = new Router;
+    $router = new Router(new \Illuminate\Container\Container());
     $router->patch('/', function () {
         TRoute::$val = false;
     });
@@ -88,7 +88,7 @@ test('options route', function () {
 
     TRoute::$val = true;
 
-    $router = new Router;
+    $router = new Router(new \Illuminate\Container\Container());
     $router->options('/', function () {
         TRoute::$val = false;
     });
@@ -103,7 +103,7 @@ test('delete route', function () {
 
     TRoute::$val = true;
 
-    $router = new Router;
+    $router = new Router(new \Illuminate\Container\Container());
     $router->delete('/', function () {
         TRoute::$val = false;
     });

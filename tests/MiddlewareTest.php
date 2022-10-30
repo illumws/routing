@@ -20,7 +20,7 @@ test('leaf middleware', function () {
 	$_SERVER['REQUEST_METHOD'] = 'GET';
 	$_SERVER['REQUEST_URI'] = '/';
 
-    $router = new Router;
+    $router = new Router(new \Illuminate\Container\Container());
 
 	$router->use(new AppMid);
 	$router->get('/', function () {
@@ -40,7 +40,7 @@ test('in-route middleware', function () {
 		echo '1';
 	};
 
-    $router = new Router;
+    $router = new Router(new \Illuminate\Container\Container());
 	
 	$router->post('/', ['middleware' => $m, function () {
 		echo '2';
@@ -57,7 +57,7 @@ test('before route middleware', function () {
 	$_SERVER['REQUEST_METHOD'] = 'PUT';
 	$_SERVER['REQUEST_URI'] = '/';
 
-    $router = new Router;
+    $router = new Router(new \Illuminate\Container\Container());
 
 	$router->before('PUT', '/', function () {
 		echo '1';
@@ -77,7 +77,7 @@ test('before router middleware', function () {
 	$_SERVER['REQUEST_METHOD'] = 'PATCH';
 	$_SERVER['REQUEST_URI'] = '/test';
 
-    $router = new Router;
+    $router = new Router(new \Illuminate\Container\Container());
 
 
 	$router->before('PATCH', '/.*', function () {
@@ -98,7 +98,7 @@ test('after router middleware', function () {
 	$_SERVER['REQUEST_METHOD'] = 'PUT';
 	$_SERVER['REQUEST_URI'] = '/test';
 
-    $router = new Router;
+    $router = new Router(new \Illuminate\Container\Container());
 
 	$router->put('/test', function () {
 		echo '1';
