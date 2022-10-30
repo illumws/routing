@@ -3,7 +3,8 @@
 use illum\Routing\Router;
 
 test('static call', function () {
-	expect(Router::routes())->toBeArray();
+    $router = new Router();
+	expect($router->routes())->toBeArray();
 });
 
 test('set 404', function () {
@@ -20,9 +21,7 @@ test('set 404', function () {
 });
 
 test('set down', function () {
-	$router = new Router;
-
-    $router->configure(['app.down' => true]);
+	$router = new Router(null, ['app.down' => true]);
 
 	$router->setDown(function () {
 		echo 'down';
@@ -33,17 +32,10 @@ test('set down', function () {
 
 	expect(ob_get_contents())->toBe('down');
 	ob_end_clean();
-
-	// clean up
-	$router->configure(['app.down' => false]);
 });
 
-test('container instance', function () {
-    Router::setContainerInstance(new \Illuminate\Container\Container());
-    expect(Router::getContainerInstance())->toBeInstanceOf(\Illuminate\Container\Container::class);
-});
-
-test('container instance without set', function () {
-    expect(Router::getContainerInstance())->toBeInstanceOf(\Illuminate\Container\Container::class);
+test('get container instance', function () {
+    $router = new Router();
+    expect($router->getContainerInstance())->toBeInstanceOf(\Illuminate\Container\Container::class);
 });
 

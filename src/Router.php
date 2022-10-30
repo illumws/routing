@@ -8,14 +8,15 @@ use illum\Http\Headers;
 
 class Router extends Core
 {
+
     /**
      * Set the 404 handling function.
      *
      * @param object|callable $handler The function to be executed
      */
-    public static function set404($handler = null)
+    public function set404($handler = null)
     {
-        static::$notFoundHandler = $handler;
+        $this->notFoundHandler = $handler;
     }
 
     /**
@@ -23,9 +24,9 @@ class Router extends Core
      *
      * @param callable|null $handler The function to be executed
      */
-    public static function setDown(?callable $handler = null)
+    public function setDown(?callable $handler = null)
     {
-        static::$downHandler = $handler;
+        $this->downHandler = $handler;
     }
 
     /**
@@ -34,30 +35,30 @@ class Router extends Core
      * @param string $path The route sub pattern/path to mount the callbacks on
      * @param callable|array $handler The callback method
      */
-    public static function mount(string $path, $handler)
+    public function mount(string $path, $handler)
     {
         $groupOptions = [
             'namespace' => null,
         ];
 
-        list($handler, $groupOptions) = static::mapHandler(
+        list($handler, $groupOptions) = $this->mapHandler(
             $handler,
             $groupOptions
         );
 
-        $namespace = static::$namespace;
-        $groupRoute = static::$groupRoute;
+        $namespace = $this->namespace;
+        $groupRoute = $this->groupRoute;
 
         if ($groupOptions['namespace']) {
-            static::$namespace = $groupOptions['namespace'];
+            $this->namespace = $groupOptions['namespace'];
         }
 
-        static::$groupRoute = $path;
+        $this->groupRoute = $path;
 
         call_user_func($handler);
 
-        static::$namespace = $namespace;
-        static::$groupRoute = $groupRoute;
+        $this->namespace = $namespace;
+        $this->groupRoute = $groupRoute;
     }
 
     /**
@@ -66,9 +67,9 @@ class Router extends Core
      * @param string $path The route sub pattern/path to mount the callbacks on
      * @param callable|array $handler The callback method
      */
-    public static function group(string $path, $handler)
+    public function group(string $path, $handler)
     {
-        static::mount($path, $handler);
+        $this->mount($path, $handler);
     }
 
     // ------------------- main routing stuff -----------------------
@@ -80,10 +81,10 @@ class Router extends Core
      * @param string $pattern The route pattern/path to match
      * @param string|array|callable $handler The handler for route when matched
      */
-    public static function match(string $methods, string $pattern, $handler)
+    public function match(string $methods, string $pattern, $handler)
     {
-        $pattern = static::$groupRoute . '/' . trim($pattern, '/');
-        $pattern = static::$groupRoute ? rtrim($pattern, '/') : $pattern;
+        $pattern = $this->groupRoute . '/' . trim($pattern, '/');
+        $pattern = $this->groupRoute ? rtrim($pattern, '/') : $pattern;
 
         $routeOptions = [
             'name' => null,
@@ -92,31 +93,31 @@ class Router extends Core
         ];
 
         if (is_string($handler)) {
-            $namespace = static::$namespace;
+            $namespace = $this->namespace;
 
             if ($routeOptions['namespace']) {
-                static::$namespace = $routeOptions['namespace'];
+                $this->namespace = $routeOptions['namespace'];
             }
 
-            $handler = str_replace('\\\\', '\\', static::$namespace . "\\$handler");
+            $handler = str_replace('\\\\', '\\', $this->namespace . "\\$handler");
 
-            static::$namespace = $namespace;
+            $this->namespace = $namespace;
         }
 
-        list($handler, $routeOptions) = static::mapHandler(
+        list($handler, $routeOptions) = $this->mapHandler(
             $handler,
             $routeOptions
         );
 
         foreach (explode('|', $methods) as $method) {
-            static::$routes[$method][] = [
+            $this->routes[$method][] = [
                 'pattern' => $pattern,
                 'handler' => $handler,
                 'name' => $routeOptions['name'] ?? ''
             ];
         }
 
-        static::$appRoutes[] = [
+        $this->appRoutes[] = [
             'methods' => explode('|', $methods),
             'pattern' => $pattern,
             'handler' => $handler,
@@ -124,11 +125,11 @@ class Router extends Core
         ];
 
         if ($routeOptions['name']) {
-            static::$namedRoutes[$routeOptions['name']] = $pattern;
+            $this->namedRoutes[$routeOptions['name']] = $pattern;
         }
 
         if ($routeOptions['middleware']) {
-            static::before($methods, $pattern, $routeOptions['middleware']);
+            $this->before($methods, $pattern, $routeOptions['middleware']);
         }
     }
 
@@ -138,9 +139,9 @@ class Router extends Core
      * @param string $pattern The route pattern/path to match
      * @param string|array|callable $handler The handler for route when matched
      */
-    public static function all(string $pattern, $handler)
+    public function all(string $pattern, $handler)
     {
-        static::match(
+        $this->match(
             'GET|POST|PUT|DELETE|OPTIONS|PATCH|HEAD',
             $pattern,
             $handler
@@ -153,9 +154,9 @@ class Router extends Core
      * @param string $pattern The route pattern/path to match
      * @param string|array|callable $handler The handler for route when matched
      */
-    public static function get(string $pattern, $handler)
+    public function get(string $pattern, $handler)
     {
-        static::match('GET', $pattern, $handler);
+        $this->match('GET', $pattern, $handler);
     }
 
     /**
@@ -164,9 +165,9 @@ class Router extends Core
      * @param string $pattern The route pattern/path to match
      * @param string|array|callable $handler The handler for route when matched
      */
-    public static function post(string $pattern, $handler)
+    public function post(string $pattern, $handler)
     {
-        static::match('POST', $pattern, $handler);
+        $this->match('POST', $pattern, $handler);
     }
 
     /**
@@ -175,9 +176,9 @@ class Router extends Core
      * @param string $pattern The route pattern/path to match
      * @param string|array|callable $handler The handler for route when matched
      */
-    public static function put(string $pattern, $handler)
+    public function put(string $pattern, $handler)
     {
-        static::match('PUT', $pattern, $handler);
+        $this->match('PUT', $pattern, $handler);
     }
 
     /**
@@ -186,9 +187,9 @@ class Router extends Core
      * @param string $pattern The route pattern/path to match
      * @param string|array|callable $handler The handler for route when matched
      */
-    public static function patch(string $pattern, $handler)
+    public function patch(string $pattern, $handler)
     {
-        static::match('PATCH', $pattern, $handler);
+        $this->match('PATCH', $pattern, $handler);
     }
 
     /**
@@ -197,9 +198,9 @@ class Router extends Core
      * @param string $pattern The route pattern/path to match
      * @param string|array|callable $handler The handler for route when matched
      */
-    public static function options(string $pattern, $handler)
+    public function options(string $pattern, $handler)
     {
-        static::match('OPTIONS', $pattern, $handler);
+        $this->match('OPTIONS', $pattern, $handler);
     }
 
     /**
@@ -208,9 +209,9 @@ class Router extends Core
      * @param string $pattern The route pattern/path to match
      * @param string|array|callable $handler The handler for route when matched
      */
-    public static function delete(string $pattern, $handler)
+    public function delete(string $pattern, $handler)
     {
-        static::match('DELETE', $pattern, $handler);
+        $this->match('DELETE', $pattern, $handler);
     }
 
     /**
@@ -220,12 +221,12 @@ class Router extends Core
      * @param string $to The url to redirect to
      * @param int $status The http status code for redirect
      */
-    public static function redirect(
+    public function redirect(
         string $from,
         string $to,
         int $status = 302
     ) {
-        static::get($from, function () use ($to, $status) {
+        $this->get($from, function () use ($to, $status) {
             Headers::set('location', $to, true, $status);
         });
     }
@@ -246,15 +247,15 @@ class Router extends Core
      * @param string $pattern The base route to use eg: /post
      * @param string $controller to handle route eg: PostController
      */
-    public static function resource(string $pattern, string $controller)
+    public function resource(string $pattern, string $controller)
     {
-        static::match('GET|HEAD', $pattern, "$controller@index");
-        static::post($pattern, "$controller@store");
-        static::match('GET|HEAD', "$pattern/create", "$controller@create");
-        static::match('POST|DELETE', "$pattern/{id}/delete", "$controller@destroy");
-        static::match('POST|PUT|PATCH', "$pattern/{id}/edit", "$controller@update");
-        static::match('GET|HEAD', "$pattern/{id}/edit", "$controller@edit");
-        static::match('GET|HEAD', "$pattern/{id}", "$controller@show");
+        $this->match('GET|HEAD', $pattern, "$controller@index");
+        $this->post($pattern, "$controller@store");
+        $this->match('GET|HEAD', "$pattern/create", "$controller@create");
+        $this->match('POST|DELETE', "$pattern/{id}/delete", "$controller@destroy");
+        $this->match('POST|PUT|PATCH', "$pattern/{id}/edit", "$controller@update");
+        $this->match('GET|HEAD', "$pattern/{id}/edit", "$controller@edit");
+        $this->match('GET|HEAD', "$pattern/{id}", "$controller@show");
     }
 
     /**
@@ -271,13 +272,13 @@ class Router extends Core
      * @param string $pattern The base route to use eg: /post
      * @param string $controller to handle route eg: PostController
      */
-    public static function apiResource(string $pattern, string $controller)
+    public function apiResource(string $pattern, string $controller)
     {
-        static::match('GET|HEAD', $pattern, "$controller@index");
-        static::post($pattern, "$controller@store");
-        static::match('POST|DELETE', "$pattern/{id}/delete", "$controller@destroy");
-        static::match('POST|PUT|PATCH', "$pattern/{id}/edit", "$controller@update");
-        static::match('GET|HEAD', "$pattern/{id}", "$controller@show");
+        $this->match('GET|HEAD', $pattern, "$controller@index");
+        $this->post($pattern, "$controller@store");
+        $this->match('POST|DELETE', "$pattern/{id}/delete", "$controller@destroy");
+        $this->match('POST|PUT|PATCH', "$pattern/{id}/edit", "$controller@update");
+        $this->match('GET|HEAD', "$pattern/{id}", "$controller@show");
     }
 
     /**
@@ -286,14 +287,14 @@ class Router extends Core
      * @param string|array $route The route to redirect to
      * @param array|null $data Data to pass to the next route
      */
-    public static function push($route, ?array $data = null)
+    public function push($route, ?array $data = null)
     {
         if (is_array($route)) {
-            if (!isset(static::$namedRoutes[$route[0]])) {
+            if (!isset($this->namedRoutes[$route[0]])) {
                 trigger_error('Route named ' . $route[0] . ' not found');
             }
 
-            $route = static::$namedRoutes[$route[0]];
+            $route = $this->namedRoutes[$route[0]];
         }
 
         if ($data) {

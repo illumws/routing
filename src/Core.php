@@ -15,22 +15,22 @@ class Core
      * Container instance
      * @var Container|null
      */
-    protected static ?Container $container = null;
+    protected Container $container;
 
     /**
      * Callable to be invoked if no matching routes are found
      */
-    protected static ?Closure $notFoundHandler = null;
+    protected ?Closure $notFoundHandler = null;
 
     /**
      * Callable to be invoked if app is down
      */
-    protected static ?Closure $downHandler = null;
+    protected ?Closure $downHandler = null;
 
     /**
      * Router configuration
      */
-    protected static array $config = [
+    protected array $config = [
         'mode' => 'development',
         'debug' => true,
         'app.down' => false,
@@ -40,7 +40,7 @@ class Core
     /**
      * 'Middleware' to run at specific times
      */
-    protected static array $hooks = [
+    protected array $hooks = [
         'router.before' => false,
         'router.before.route' => false,
         'router.before.dispatch' => false,
@@ -52,54 +52,56 @@ class Core
     /**
      * Leaf app middleware
      */
-    protected static ?array $middleware = [];
+    protected ?array $middleware = [];
 
     /**
      * Route specific middleware
      */
-    protected static ?array $routeSpecificMiddleware = [];
+    protected ?array $routeSpecificMiddleware = [];
 
     /**
      * All added routes and their handlers
      */
-    protected static ?array $routes = [];
+    protected ?array $routes = [];
 
     /**
      * Sorted list of routes and their handlers
      */
-    protected static ?array $appRoutes = [];
+    protected ?array $appRoutes = [];
 
     /**
      * All named routes
      */
-    protected static ?array $namedRoutes = [];
+    protected ?array $namedRoutes = [];
 
     /**
      * Current group base path
      */
-    protected static ?string $groupRoute = '';
+    protected ?string $groupRoute = '';
 
     /**
      * Default controller namespace
      */
-    protected static ?string $namespace = '';
+    protected ?string $namespace = '';
 
     /**
      * The Request Method that needs to be handled
      */
-    protected static ?string $requestedMethod = '';
+    protected ?string $requestedMethod = '';
 
     /**
      * The Server Base Path for Router Execution
      */
-    protected static ?string $serverBasePath = '';
+    protected ?string $serverBasePath = '';
 
     /**
-     * Configure leaf router
+     * @param Container|null $container
+     * @param array $config
      */
-    public static function configure(array $config)
+    public function __construct(Container $container = null, array $config = [])
     {
-        static::$config = array_merge(static::$config, $config);
+        $this->container = $container ?? new Container();
+        $this->config = array_merge($this->config, $config);
     }
 
     /**
@@ -108,11 +110,11 @@ class Core
      * @param string $method The method to call
      * @param string $url The uri to force
      */
-    public static function handleUrl(string $method, string $url)
+    public function handleUrl(string $method, string $url)
     {
-        if (isset(static::$routes[$method])) {
-            static::handle(
-                static::$routes[$method],
+        if (isset($this->routes[$method])) {
+            $this->handle(
+                $this->routes[$method],
                 true,
                 $url
             );
@@ -122,9 +124,9 @@ class Core
     /**
      * Get all routes registered in your leaf app
      */
-    public static function routes(): array
+    public function routes(): array
     {
-        return static::$appRoutes;
+        return $this->appRoutes;
     }
 
     /**
@@ -132,9 +134,9 @@ class Core
      *
      * @param string $namespace The global namespace to set
      */
-    public static function setNamespace(string $namespace)
+    public function setNamespace(string $namespace)
     {
-        static::$namespace = $namespace;
+        $this->namespace = $namespace;
     }
 
     /**
@@ -142,15 +144,15 @@ class Core
      *
      * @return string The given namespace if exists
      */
-    public static function getNamespace(): string
+    public function getNamespace(): string
     {
-        return static::$namespace;
+        return $this->namespace;
     }
 
     /**
      * Map handler and options
      */
-    protected static function mapHandler($handler, $options): array
+    protected function mapHandler($handler, $options): array
     {
         if (is_array($handler)) {
             $handlerData = $handler;
@@ -195,13 +197,13 @@ class Core
      * @param string $name The hook to set
      * @param callable|null $handler The hook handler
      */
-    public static function hook(string $name, callable $handler)
+    public function hook(string $name, callable $handler)
     {
-        if (!isset(static::$hooks[$name])) {
+        if (!isset($this->hooks[$name])) {
             trigger_error("$name is not a valid hook! Refer to the docs for all supported hooks");
         }
 
-        static::$hooks[$name] = $handler;
+        $this->hooks[$name] = $handler;
     }
 
     /**
@@ -209,9 +211,9 @@ class Core
      *
      * @param string $name The hook to call
      */
-    private static function callHook(string $name)
+    private function callHook(string $name)
     {
-        return is_callable(static::$hooks[$name]) ? static::$hooks[$name]() : null;
+        return is_callable($this->hooks[$name]) ? $this->hooks[$name]() : null;
     }
 
     /**
@@ -221,21 +223,21 @@ class Core
      * @param string|array $path The path/route to apply middleware on
      * @param callable $handler The middleware handler
      */
-    public static function before(string $methods, $path, callable $handler)
+    public function before(string $methods, $path, callable $handler)
     {
         if (is_array($path)) {
-            if (!isset(static::$namedRoutes[$path[0]])) {
+            if (!isset($this->namedRoutes[$path[0]])) {
                 trigger_error('Route named ' . $path[0] . ' not found');
             }
 
-            $path = static::$namedRoutes[$path[0]];
+            $path = $this->namedRoutes[$path[0]];
         }
 
-        $path = static::$groupRoute . '/' . trim($path, '/');
-        $path = static::$groupRoute ? rtrim($path, '/') : $path;
+        $path = $this->groupRoute . '/' . trim($path, '/');
+        $path = $this->groupRoute ? rtrim($path, '/') : $path;
 
         foreach (explode('|', $methods) as $method) {
-            static::$routeSpecificMiddleware[$method][] = [
+            $this->routeSpecificMiddleware[$method][] = [
                 'pattern' => $path,
                 'handler' => $handler,
             ];
@@ -250,18 +252,18 @@ class Core
      *
      * @param Middleware $newMiddleware The middleware to set
      */
-    public static function use(Middleware $newMiddleware)
+    public function use(Middleware $newMiddleware)
     {
-        if (in_array($newMiddleware, static::$middleware)) {
+        if (in_array($newMiddleware, $this->middleware)) {
             $middleware_class = get_class($newMiddleware);
             throw new \RuntimeException("Circular Middleware setup detected. Tried to queue the same Middleware instance ({$middleware_class}) twice.");
         }
 
-        if (!empty(static::$middleware)) {
-            $newMiddleware->setNextMiddleware(static::$middleware[0]);
+        if (!empty($this->middleware)) {
+            $newMiddleware->setNextMiddleware($this->middleware[0]);
         }
 
-        array_unshift(static::$middleware, $newMiddleware);
+        array_unshift($this->middleware, $newMiddleware);
     }
 
     /**
@@ -270,9 +272,9 @@ class Core
      *
      * @param string $serverBasePath
      */
-    public static function setBasePath(string $serverBasePath)
+    public function setBasePath(string $serverBasePath)
     {
-        static::$serverBasePath = $serverBasePath;
+        $this->serverBasePath = $serverBasePath;
     }
 
     /**
@@ -280,10 +282,10 @@ class Core
      *
      * @return string
      */
-    public static function getCurrentUri(): string
+    public function getCurrentUri(): string
     {
-        if (self::$config['path.prefix']){
-            $uri = str_replace(self::$config['path.prefix'], '', Request::getPathInfo());
+        if ($this->config['path.prefix']){
+            $uri = str_replace($this->config['path.prefix'], '', Request::getPathInfo());
         } else {
             $uri = Request::getPathInfo();
         }
@@ -300,54 +302,46 @@ class Core
      *
      * @return array The route info array
      */
-    public static function getRoute(): array
+    public function getRoute(): array
     {
         return [
-            'path' => static::getCurrentUri(),
+            'path' => $this->getCurrentUri(),
             'method' => Request::getMethod(),
         ];
     }
 
     /**
-     * @param Container $container
-     * @return void
-     */
-    public static function setContainerInstance(Container $container){
-        self::$container = $container;
-    }
-
-    /**
      * @return Container
      */
-    public static function getContainerInstance(): Container
+    public function getContainerInstance(): Container
     {
-        return self::$container ?? new Container();
+        return $this->container;
     }
 
     /**
      * Dispatch your application routes
      */
-    public static function run(?callable $callback = null): bool
+    public function run(?callable $callback = null): bool
     {
-        $config = static::$config;
+        $config = $this->config;
         if ($config['app.down'] === true) {
 
-            if (!static::$downHandler) {
-                static::$downHandler = function () {
+            if (!$this->downHandler) {
+                $this->downHandler = function () {
                     throw new \ErrorException('App is under maintainance, please check back soon.');
                 };
             }
 
-            return static::invoke(static::$downHandler);
+            return $this->invoke($this->downHandler);
         }
 
-        $middleware = static::$middleware;
+        $middleware = $this->middleware;
 
         if (is_callable($callback)) {
-            static::hook('router.after', $callback);
+            $this->hook('router.after', $callback);
         }
 
-        static::callHook('router.before');
+        $this->callHook('router.before');
 
         if (count($middleware) > 0) {
             if (is_string($middleware[0])) {
@@ -357,35 +351,35 @@ class Core
             }
         }
 
-        static::callHook('router.before.route');
+        $this->callHook('router.before.route');
 
-        static::$requestedMethod = Request::getMethod();
+        $this->requestedMethod = Request::getMethod();
 
-        if (isset(static::$routeSpecificMiddleware[static::$requestedMethod])) {
-            static::handle(static::$routeSpecificMiddleware[static::$requestedMethod]);
+        if (isset($this->routeSpecificMiddleware[$this->requestedMethod])) {
+            $this->handle($this->routeSpecificMiddleware[$this->requestedMethod]);
         }
 
-        static::callHook('router.before.dispatch');
+        $this->callHook('router.before.dispatch');
 
         $numHandled = 0;
 
-        if (isset(static::$routes[static::$requestedMethod])) {
-            $numHandled = static::handle(
-                static::$routes[static::$requestedMethod],
+        if (isset($this->routes[$this->requestedMethod])) {
+            $numHandled = $this->handle(
+                $this->routes[$this->requestedMethod],
                 true
             );
         }
 
-        static::callHook('router.after.dispatch');
+        $this->callHook('router.after.dispatch');
 
         if ($numHandled === 0) {
-            if (!static::$notFoundHandler) {
-                static::$notFoundHandler = function () {
+            if (!$this->notFoundHandler) {
+                $this->notFoundHandler = function () {
                     throw new \ErrorException("Route not found");
                 };
             }
 
-            return static::invoke(static::$notFoundHandler);
+            return $this->invoke($this->notFoundHandler);
         }
 
         // if it originally was a HEAD request, clean up after ourselves by emptying the output buffer
@@ -393,11 +387,11 @@ class Core
             ob_end_clean();
         }
 
-        static::callHook('router.after.route');
+        $this->callHook('router.after.route');
 
         restore_error_handler();
 
-        return static::callHook('router.after') ?? ($numHandled !== 0);
+        return $this->callHook('router.after') ?? ($numHandled !== 0);
     }
 
     /**
@@ -409,10 +403,10 @@ class Core
      *
      * @return int The number of routes handled
      */
-    private static function handle(array $routes, bool $quitAfterRun = false, ?string $uri = null): int
+    private function handle(array $routes, bool $quitAfterRun = false, ?string $uri = null): int
     {
         $numHandled = 0;
-        $uri = $uri ?? static::getCurrentUri();
+        $uri = $uri ?? $this->getCurrentUri();
 
         foreach ($routes as $route) {
             // Replace all curly braces matches {} into word patterns (like Laravel)
@@ -435,7 +429,7 @@ class Core
                 }, $matches, array_keys($matches));
 
                 // Call the handling function with the URL parameters if the desired input is callable
-                static::invoke($route['handler'], $params);
+                $this->invoke($route['handler'], $params);
                 ++$numHandled;
 
                 if ($quitAfterRun) {
@@ -453,7 +447,7 @@ class Core
      * @return true
      * @throws BindingResolutionException
      */
-    private static function invoke($handler, array $params = []): bool
+    private function invoke($handler, array $params = []): bool
     {
         if (is_callable($handler) or is_array($handler)) {
             if (is_array($handler)){
