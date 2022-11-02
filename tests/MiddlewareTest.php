@@ -1,6 +1,6 @@
 <?php
 
-use illum\Routing\Router;
+use Illum\Routing\Router;
 
 class TMid
 {
@@ -10,7 +10,7 @@ class TMid
 test('leaf middleware', function () {
 	TMid::$callstack = '';
 
-	class AppMid extends \illum\Routing\Middleware {
+	class AppMid extends \Illum\Routing\Middleware {
 		public function call()
 		{
 			TMid::$callstack .= '1';

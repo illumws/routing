@@ -1,6 +1,6 @@
 <?php
 
-use illum\Routing\Router;
+use Illum\Routing\Router;
 
 test('static call', function () {
     $router = new Router(new \Illuminate\Container\Container());

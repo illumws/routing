@@ -1,6 +1,6 @@
 <?php
 
-use illum\Routing\Router;
+use Illum\Routing\Router;
 
 class TRoute
 {

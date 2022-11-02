@@ -1,6 +1,6 @@
 <?php
 
-use illum\Routing\Router;
+use Illum\Routing\Router;
 
 test('hook execution order', function () {
     $_SERVER['REQUEST_METHOD'] = 'POST';

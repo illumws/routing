@@ -1,6 +1,6 @@
 <?php
 
-use illum\Routing\Router;
+use Illum\Routing\Router;
 
 test('router match with controller', function () {
     $_SERVER['REQUEST_METHOD'] = 'PUT';
