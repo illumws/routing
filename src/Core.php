@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
-namespace illum\Routing;
+namespace Illum\Routing;
 
 use Closure;
-use illum\Http\Request;
+use Illum\Http\Request;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Container\BindingResolutionException;
 

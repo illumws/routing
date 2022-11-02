@@ -1,10 +1,8 @@
 <?php
 
-declare(strict_types=1);
+namespace Illum\Routing;
 
-namespace illum\Routing;
-
-use illum\Http\Headers;
+use Illum\Http\Headers;
 
 class Router extends Core
 {

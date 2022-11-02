@@ -1,6 +1,6 @@
 <?php
 
-namespace illum\Routing;
+namespace Illum\Routing;
 
 /**
  * Middleware
