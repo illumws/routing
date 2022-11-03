@@ -3,12 +3,11 @@
 use Illum\Routing\Router;
 
 test('static call', function () {
-    $router = new Router(new \Illuminate\Container\Container());
-	expect($router->routes())->toBeArray();
+	expect(Router::routes())->toBeArray();
 });
 
 test('set 404', function () {
-    $router = new Router(new \Illuminate\Container\Container());
+    $router = new Router;
     $router->set404(function () {
 		echo '404';
 	});
@@ -21,7 +20,9 @@ test('set 404', function () {
 });
 
 test('set down', function () {
-	$router = new Router(new \Illuminate\Container\Container(), ['app.down' => true]);
+	$router = new Router;
+
+    $router->configure(['app.down' => true]);
 
 	$router->setDown(function () {
 		echo 'down';
@@ -32,17 +33,17 @@ test('set down', function () {
 
 	expect(ob_get_contents())->toBe('down');
 	ob_end_clean();
+
+	// clean up
+	$router->configure(['app.down' => false]);
 });
 
-test('get container instance', function () {
-    $router = new Router(new \Illuminate\Container\Container());
-    expect($router->getContainerInstance())->toBeInstanceOf(\Illuminate\Container\Container::class);
+test('container instance', function () {
+    Router::setContainerInstance(new \Illuminate\Container\Container());
+    expect(Router::getContainerInstance())->toBeInstanceOf(\Illuminate\Container\Container::class);
 });
 
-test('get router instance on container', function (){
-    $container = new Illuminate\Container\Container();
-    $router = new Router($container);
-
-    $routerFromContainer = $container->get('router');
-    expect($router)->toBe($routerFromContainer);
+test('container instance without set', function () {
+    expect(Router::getContainerInstance())->toBeInstanceOf(\Illuminate\Container\Container::class);
 });
+
