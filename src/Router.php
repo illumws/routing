@@ -44,18 +44,17 @@ class Router extends Core
         );
 
         $namespace = static::$namespace;
-        $groupRoute = static::$groupRoute;
 
         if ($groupOptions['namespace']) {
             static::$namespace = $groupOptions['namespace'];
         }
 
-        static::$groupRoute = $path;
+        static::$groupRoute .= $path;
 
         call_user_func($handler);
 
         static::$namespace = $namespace;
-        static::$groupRoute = $groupRoute;
+        static::$groupRoute = str_replace($path, '', static::$groupRoute);
     }
 
     /**
